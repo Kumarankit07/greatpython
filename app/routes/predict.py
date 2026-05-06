@@ -134,6 +134,27 @@ def run_prediction():
     except Exception as e:
         flash(f'Prediction error: {str(e)}. Using rule-based fallback.', 'warning')
         fallback = rule_based_predict(input_dict if 'input_dict' in locals() else {})
+        
+        # Save fallback to DB
+        try:
+            pred_record = Prediction(
+                user_id=current_user.id,
+                age=input_dict.get('age', 0) if 'input_dict' in locals() else 0,
+                gender='Male' if ('input_dict' in locals() and input_dict.get('gender') == 1) else 'Female',
+                disease=fallback['disease'],
+                risk_level=fallback['risk_level'],
+                probability=fallback['probability'],
+                recommendation=fallback['recommendation'],
+                model_latency_ms=fallback['latency_ms'],
+                bandwidth_simulated=request.form.get('bandwidth', '50kbps'),
+                patient_name=request.form.get('patient_name'),
+                patient_aadhaar=request.form.get('patient_aadhaar')
+            )
+            db.session.add(pred_record)
+            db.session.commit()
+        except Exception as db_err:
+            print("DB Save Error in Fallback:", db_err)
+
         return render_template('predict/result.html', result=fallback,
                                input_data={}, symptoms={}, symptom_labels={},
                                disease=fallback['disease'])
