@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block title %}Neurological Diseases Guide{% endblock %}
+
+{% block content %}
+<div class="container page-content">
+  <div class="text-center mb-3">
+    <div class="hero-badge">🧠 Clinical Reference Guide</div>
+    <h1 class="section-title" style="font-size:2rem;">Neurological Diseases</h1>
+    <p class="section-sub" style="max-width:600px;margin:0 auto;">
+      Comprehensive information on the four neurological conditions covered by NeuroCare AI.
+    </p>
+  </div>
+
+  <!-- ── STROKE ────────────────────────────────────────────────────── -->
+  <div class="disease-info-card mb-2 animate-fade-up" id="stroke">
+    <div class="disease-info-header" style="background:linear-gradient(135deg,rgba(248,113,113,.1),transparent);border-bottom:1px solid rgba(248,113,113,.2);">
+      <div style="font-size:3rem;">🔴</div>
+      <div>
+        <h2 style="font-family:'Outfit',sans-serif;font-size:1.5rem;font-weight:800;">Stroke</h2>
+        <p style="color:var(--text2);font-size:.88rem;">Cerebrovascular Accident (CVA) — TIME CRITICAL</p>
+      </div>
+      <span style="margin-left:auto;background:rgba(248,113,113,.15);color:#f87171;padding:.3rem .9rem;border-radius:999px;font-size:.8rem;font-weight:700;border:1px solid rgba(248,113,113,.3);">Emergency</span>
+    </div>
+    <div class="disease-info-body mt-2">
+      <div class="grid-3">
+        <div>
+          <h4 style="font-size:.88rem;font-weight:700;color:var(--p1);margin-bottom:.6rem;">🚨 FAST Warning Signs</h4>
+          {% for s in ['F — Face drooping (one side)','A — Arm weakness or numbness','S — Speech slurred or strange','T — Time to call 108 NOW'] %}
+          <div style="font-size:.85rem;color:var(--text2);padding:.3rem 0;border-bottom:1px solid var(--border);">{{ s }}</div>
+          {% endfor %}
+        </div>
+        <div>
+          <h4 style="font-size:.88rem;font-weight:700;color:var(--p1);margin-bottom:.6rem;">⚠️ Risk Factors</h4>
+          {% for r in ['Hypertension (BP > 140/90)','Diabetes / High glucose','Heart disease / AF','Smoking','Age > 55','Obesity (BMI > 30)'] %}
+          <div style="font-size:.85rem;color:var(--text2);padding:.3rem 0;border-bottom:1px solid var(--border);">• {{ r }}</div>
+          {% endfor %}
+        </div>
+        <div>
+          <h4 style="font-size:.88rem;font-weight:700;color:var(--p1);margin-bottom:.6rem;">🏥 Action Plan</h4>
+          {% for a in ['Call 108 immediately','Do NOT give food/water','Keep patient calm & still','Note time symptoms started','Rush to CT-capable hospital','Golden hour: thrombolysis'] %}
+          <div style="font-size:.85rem;color:var(--text2);padding:.3rem 0;border-bottom:1px solid var(--border);">{{ loop.index }}. {{ a }}</div>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="alert alert-danger mt-2" style="font-size:.85rem;">
+        🔴 <strong>Every 1 minute of delay = 1.9 million brain cells lost.</strong> Stroke is the #2 cause of death and #1 cause of disability in India.
+      </div>
+    </div>
+  </div>
+
+  <!-- ── EPILEPSY ──────────────────────────────────────────────────── -->
+  <div class="disease-info-card mb-2 animate-fade-up" id="epilepsy">
+    <div class="disease-info-header" style="background:linear-gradient(135deg,rgba(167,139,250,.1),transparent);border-bottom:1px solid rgba(167,139,250,.2);">
+      <div style="font-size:3rem;">⚡</div>
+      <div>
+        <h2 style="font-family:'Outfit',sans-serif;font-size:1.5rem;font-weight:800;">Epilepsy</h2>
+        <p style="color:var(--text2);font-size:.88rem;">Recurrent seizure disorder — neurological</p>
+      </div>
+      <span style="margin-left:auto;background:rgba(167,139,250,.15);color:#c4b5fd;padding:.3rem .9rem;border-radius:999px;font-size:.8rem;font-weight:700;border:1px solid rgba(167,139,250,.3);">Manageable</span>
+    </div>
+    <div class="disease-info-body mt-2">
+      <div class="grid-3">
+        <div>
+          <h4 style="font-size:.88rem;font-weight:700;color:var(--p2);margin-bottom:.6rem;">⚡ Seizure Types</h4>
+          {% for s in ['Tonic-clonic (grand mal)','Absence seizures','Focal (partial) seizures','Myoclonic jerks','Atonic (drop attacks)','Status epilepticus (>5 min)'] %}
+          <div style="font-size:.85rem;color:var(--text2);padding:.3rem 0;border-bottom:1px solid var(--border);">• {{ s }}</div>
+          {% endfor %}
+        </div>
+        <div>
+          <h4 style="font-size:.88rem;font-weight:700;color:var(--p2);margin-bottom:.6rem;">🚑 First Aid (DO)</h4>
+          {% for a in ['Stay calm','Time the seizure','Clear the area','Turn on side (recovery)','Protect the head','Stay until fully conscious'] %}
+          <div style="font-size:.85rem;color:var(--text2);padding:.3rem 0;border-bottom:1px solid var(--border);">✓ {{ a }}</div>
+          {% endfor %}
+        </div>
+        <div>
+          <h4 style="font-size:.88rem;font-weight:700;color:var(--danger);margin-bottom:.6rem;">🚫 First Aid (DON'T)</h4>
+          {% for a in ['Hold down the person','Put anything in mouth','Give water during seizure','Leave alone','Restrain limbs','Give food immediately'] %}
+          <div style="font-size:.85rem;color:var(--text2);padding:.3rem 0;border-bottom:1px solid var(--border);">✗ {{ a }}</div>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="alert alert-info mt-2" style="font-size:.85rem;">
+        ⚡ <strong>Call 108 if:</strong> seizure lasts >5 min (status epilepticus), person doesn't wake up, repeated seizures, first-ever seizure, or injury occurs.
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MENINGITIS ────────────────────────────────────────────────── -->
+  <div class="disease-info-card mb-2 animate-fade-up" id="meningitis">
+    <div class="disease-info-header" style="background:linear-gradient(135deg,rgba(52,211,153,.1),transparent);border-bottom:1px solid rgba(52,211,153,.2);">
+      <div style="font-size:3rem;">🦠</div>
+      <div>
+        <h2 style="font-family:'Outfit',sans-serif;font-size:1.5rem;font-weight:800;">Meningitis</h2>
+        <p style="color:var(--text2);font-size:.88rem;">Infection of brain/spinal cord membranes</p>
+      </div>
+      <span style="margin-left:auto;background:rgba(52,211,153,.15);color:#34d399;padding:.3rem .9rem;border-radius:999px;font-size:.8rem;font-weight:700;border:1px solid rgba(52,211,153,.3);">Emergency</span>
+    </div>
+    <div class="disease-info-body mt-2">
+      <div class="grid-3">
+        <div>
+          <h4 style="font-size:.88rem;font-weight:700;color:var(--p3);margin-bottom:.6rem;">🌡️ Classic Triad</h4>
+          {% for s in ['High fever (>38.5°C)','Severe headache','Neck stiffness (nuchal rigidity)','+ Photophobia (light fear)','+ Kernig\'s sign positive','+ Brudzinski\'s sign positive'] %}
+          <div style="font-size:.85rem;color:var(--text2);padding:.3rem 0;border-bottom:1px solid var(--border);">{{ s }}</div>
+          {% endfor %}
+        </div>
+        <div>
+          <h4 style="font-size:.88rem;font-weight:700;color:var(--p3);margin-bottom:.6rem;">⚠️ Danger Signs</h4>
+          {% for s in ['Purple/red non-blanching rash','Altered consciousness','Seizures','Sensitivity to light or sound','Bulging fontanelle (infants)','Rapid deterioration'] %}
+          <div style="font-size:.85rem;color:var(--text2);padding:.3rem 0;border-bottom:1px solid var(--border);">⚠️ {{ s }}</div>
+          {% endfor %}
+        </div>
+        <div>
+          <h4 style="font-size:.88rem;font-weight:700;color:var(--p3);margin-bottom:.6rem;">💊 Treatment</h4>
+          {% for a in ['IV antibiotics (ASAP)','Corticosteroids (dexamethasone)','Lumbar puncture (CSF test)','ICU monitoring','Anti-seizure if needed','Isolation (bacterial type)'] %}
+          <div style="font-size:.85rem;color:var(--text2);padding:.3rem 0;border-bottom:1px solid var(--border);">{{ loop.index }}. {{ a }}</div>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="alert alert-warning mt-2" style="font-size:.85rem;">
+        🦠 <strong>Bacterial meningitis kills within 24 hours if untreated.</strong> Antibiotics must begin within 1 hour of arrival at hospital. Rash + fever = call 108 NOW.
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ENCEPHALITIS ──────────────────────────────────────────────── -->
+  <div class="disease-info-card mb-2 animate-fade-up" id="encephalitis">
+    <div class="disease-info-header" style="background:linear-gradient(135deg,rgba(251,191,36,.1),transparent);border-bottom:1px solid rgba(251,191,36,.2);">
+      <div style="font-size:3rem;">🌡️</div>
+      <div>
+        <h2 style="font-family:'Outfit',sans-serif;font-size:1.5rem;font-weight:800;">Encephalitis</h2>
+        <p style="color:var(--text2);font-size:.88rem;">Brain inflammation — usually viral</p>
+      </div>
+      <span style="margin-left:auto;background:rgba(251,191,36,.15);color:#fbbf24;padding:.3rem .9rem;border-radius:999px;font-size:.8rem;font-weight:700;border:1px solid rgba(251,191,36,.3);">Critical</span>
+    </div>
+    <div class="disease-info-body mt-2">
+      <div class="grid-3">
+        <div>
+          <h4 style="font-size:.88rem;font-weight:700;color:var(--warning);margin-bottom:.6rem;">🌡️ Symptoms</h4>
+          {% for s in ['High fever (>39°C)','Severe headache','Altered consciousness','Confusion / personality change','Seizures','Difficulty speaking/moving'] %}
+          <div style="font-size:.85rem;color:var(--text2);padding:.3rem 0;border-bottom:1px solid var(--border);">• {{ s }}</div>
+          {% endfor %}
+        </div>
+        <div>
+          <h4 style="font-size:.88rem;font-weight:700;color:var(--warning);margin-bottom:.6rem;">🔬 Common Causes</h4>
+          {% for s in ['Herpes simplex virus (HSV)','Japanese Encephalitis (JE)','Dengue virus','Nipah virus (rare)','West Nile virus','Auto-immune (NMDA-R)'] %}
+          <div style="font-size:.85rem;color:var(--text2);padding:.3rem 0;border-bottom:1px solid var(--border);">• {{ s }}</div>
+          {% endfor %}
+        </div>
+        <div>
+          <h4 style="font-size:.88rem;font-weight:700;color:var(--warning);margin-bottom:.6rem;">🏥 Management</h4>
+          {% for a in ['Hospital admission (ICU)','Acyclovir (HSV encephalitis)','Anti-seizure medicines','MRI brain imaging','EEG monitoring','JE vaccination prevention'] %}
+          <div style="font-size:.85rem;color:var(--text2);padding:.3rem 0;border-bottom:1px solid var(--border);">{{ loop.index }}. {{ a }}</div>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="alert alert-warning mt-2" style="font-size:.85rem;">
+        🌡️ <strong>Japanese Encephalitis</strong> affects rural India disproportionately — especially during monsoon. Vaccination is available free at government centres.
+      </div>
+    </div>
+  </div>
+
+  <!-- QUICK LINKS -->
+  <div class="card text-center animate-fade-up" style="background:linear-gradient(135deg,rgba(34,211,238,.07),rgba(167,139,250,.07));border-color:rgba(34,211,238,.2);">
+    <h3 style="font-family:'Outfit',sans-serif;font-size:1.2rem;font-weight:800;margin-bottom:.8rem;">Ready to check symptoms?</h3>
+    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+      <a href="{{ url_for('predict.checker') }}" class="btn btn-primary">🩺 Symptom Checker</a>
+      <a href="{{ url_for('main.about') }}" class="btn btn-outline">ℹ️ About This Platform</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

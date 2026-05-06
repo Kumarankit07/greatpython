@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Simulation Panel{% endblock %}
+
+{% block content %}
+<div class="container page-content">
+  <h1 class="section-title">⚙️ Scenario Testing Panel</h1>
+  <p class="section-sub">Simulate the rural healthcare journey under different bandwidth, noise, and data conditions.</p>
+
+  <div class="grid-2">
+    <!-- PARAMS FORM -->
+    <div class="card">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:1.25rem;">🎛️ Simulation Parameters</h3>
+      <form method="POST" action="{{ url_for('simulation.run') }}" id="simForm">
+
+        <div class="form-group">
+          <label class="form-label">📡 Bandwidth Condition</label>
+          <select name="bandwidth" class="form-control" id="bwSelect">
+            <option value="offline">Offline (Cached predictions)</option>
+            <option value="10kbps">10 kbps — Very slow rural link</option>
+            <option value="50kbps" selected>50 kbps — Typical rural India</option>
+            <option value="100kbps">100 kbps — Basic connectivity</option>
+            <option value="1mbps">1 Mbps — Good connection</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">🤖 Model Size</label>
+          <select name="model_size" class="form-control">
+            <option value="small" selected>Small (fast, lightweight)</option>
+            <option value="medium">Medium (balanced accuracy)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">🔊 Symptom Noise Level: <span id="noiseVal">0%</span></label>
+          <input type="range" name="noise_level" min="0" max="0.4" step="0.05" value="0"
+                 oninput="document.getElementById('noiseVal').textContent=Math.round(this.value*100)+'%'"/>
+          <p style="font-size:0.78rem;color:var(--text-dim);margin-top:0.3rem;">Simulates incorrect symptom reporting</p>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">❓ Missing Data: <span id="missingVal">0%</span></label>
+          <input type="range" name="missing_data_pct" min="0" max="0.5" step="0.05" value="0"
+                 oninput="document.getElementById('missingVal').textContent=Math.round(this.value*100)+'%'"/>
+          <p style="font-size:0.78rem;color:var(--text-dim);margin-top:0.3rem;">Simulates incomplete patient data</p>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">👥 Number of Patients: <span id="patientsVal">50</span></label>
+          <input type="range" name="num_patients" min="10" max="200" step="10" value="50"
+                 oninput="document.getElementById('patientsVal').textContent=this.value"/>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;" id="simBtn">
+          🚀 Run Simulation
+        </button>
+      </form>
+    </div>
+
+    <!-- INFO + PAST RUNS -->
+    <div>
+      <div class="card mb-2">
+        <h3 style="font-size:1rem;font-weight:700;margin-bottom:1rem;">🛤️ Simulation Flow</h3>
+        {% for step, icon, desc in [
+          ('1','🧑','Synthetic patient generated with realistic demographics'),
+          ('2','🔊','Symptom noise and missing data applied'),
+          ('3','🧠','AI model (or rule-based fallback) runs prediction'),
+          ('4','👩‍⚕️','ASHA worker interaction simulated'),
+          ('5','🏥','Referral decision made (Home/PHC/Emergency)'),
+          ('6','📊','Outcomes measured: accuracy, latency, time-to-care')
+        ] %}
+        <div style="display:flex;align-items:flex-start;gap:0.75rem;margin-bottom:0.75rem;">
+          <div style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;flex-shrink:0;">{{ step }}</div>
+          <div>
+            <span style="font-size:0.95rem;">{{ icon }}</span>
+            <span style="font-size:0.88rem;color:var(--text-muted);margin-left:4px;">{{ desc }}</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- PAST RUNS -->
+      {% if runs %}
+      <div class="card">
+        <h3 style="font-size:1rem;font-weight:700;margin-bottom:1rem;">🕐 Recent Simulations</h3>
+        {% for r in runs %}
+        <div style="border-bottom:1px solid var(--border); padding:0.75rem 0; {% if loop.last %}border-bottom:none;{% endif %}" >
+          <div class="d-flex align-center justify-between">
+            <div style="font-size:0.85rem;font-weight:600;">{{ r.bandwidth }} · {{ r.model_size }} model</div>
+            <div style="font-size:0.78rem;color:var(--text-muted);">{{ r.created_at.strftime('%d %b %H:%M') }}</div>
+          </div>
+          <div style="display:flex;gap:1rem;margin-top:0.3rem;font-size:0.8rem;color:var(--text-muted);">
+            <span>Acc: <strong style="color:var(--text-primary);">{{ (r.accuracy*100)|round(1) if r.accuracy is not none else 0 }}%</strong></span>
+            <span>Det: <strong style="color:var(--text-primary);">{{ (r.detection_rate*100)|round(1) if r.detection_rate is not none else 0 }}%</strong></span>
+            <span>Lat: <strong style="color:var(--text-primary);">{{ r.avg_latency_ms|round(0)|int if r.avg_latency_ms is not none else 0 }} ms</strong></span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

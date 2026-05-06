@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block title %}Prediction Result{% endblock %}
+
+{% block content %}
+<div class="container page-content">
+  <div class="d-flex align-center justify-between mb-3">
+    <h1 class="section-title">📊 Prediction Result</h1>
+    <a href="{{ url_for('predict.checker') }}" class="btn btn-outline btn-sm">← New Check</a>
+  </div>
+
+  {% set risk_class = result.risk_level | lower %}
+  {% set risk_colors = {'low': '#10b981', 'medium': '#f59e0b', 'high': '#ef4444'} %}
+  {% set risk_icons  = {'low': '✅', 'medium': '⚠️', 'high': '🚨'} %}
+  {% set risk_color  = risk_colors.get(risk_class, '#3b82f6') %}
+  {% set risk_icon   = risk_icons.get(risk_class, 'ℹ️') %}
+
+  <!-- RESULT HERO -->
+  <div class="result-hero {{ risk_class }} animate-fade-up">
+    <div style="font-size:3rem;{% if risk_class=='high' %}animation:pulse-ring 2s infinite;{% endif %}">{{ risk_icon }}</div>
+    <div class="result-disease">{{ result.disease | title }}</div>
+    <div class="risk-badge risk-{{ risk_class }}" style="margin:0.75rem auto;display:inline-flex;">
+      {{ result.risk_level }} Risk
+    </div>
+    <div class="prob-circle" style="color:{{ risk_color }};border-color:{{ risk_color }};">
+      {{ (result.probability * 100) | int }}%
+    </div>
+    <p style="color:var(--text-muted);font-size:0.9rem;">Disease probability score</p>
+  </div>
+
+  <div class="grid-2">
+    <!-- RECOMMENDATION -->
+    <div class="card animate-fade-up">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:1rem;">📋 Recommended Action</h3>
+      <div style="background:rgba({% if risk_class=='high' %}239,68,68{% elif risk_class=='medium' %}245,158,11{% else %}16,185,129{% endif %},0.08);border:1px solid {{ risk_color }}44;border-radius:var(--radius-sm);padding:1.25rem;">
+        <div style="font-size:2rem;margin-bottom:0.5rem;">
+          {% if risk_class == 'high' %}🚑{% elif risk_class == 'medium' %}🏥{% else %}🏠{% endif %}
+        </div>
+        <p style="font-size:1rem;font-weight:600;color:{{ risk_color }};margin-bottom:0.5rem;">
+          {% if risk_class == 'high' %}EMERGENCY REFERRAL
+          {% elif risk_class == 'medium' %}VISIT PHC
+          {% else %}HOME MONITORING{% endif %}
+        </p>
+        <p style="font-size:0.9rem;color:var(--text-muted);line-height:1.6;">{{ result.recommendation }}</p>
+      </div>
+      {% if risk_class == 'high' %}
+      <div class="alert alert-danger mt-2">
+        🚨 <strong>Call 108</strong> (National Emergency) immediately. Do not delay transport.
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- METRICS -->
+    <div class="card animate-fade-up">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:1rem;">⚡ Model Metrics</h3>
+      <div class="sim-param">
+        <span class="text-muted">Disease</span>
+        <strong style="text-transform:capitalize;">{{ result.disease }}</strong>
+      </div>
+      <div class="sim-param">
+        <span class="text-muted">Probability</span>
+        <strong>{{ (result.probability * 100) | round(1) }}%</strong>
+      </div>
+      <div class="sim-param">
+        <span class="text-muted">Risk Level</span>
+        <span class="risk-badge risk-{{ risk_class }}">{{ result.risk_level }}</span>
+      </div>
+      <div class="sim-param">
+        <span class="text-muted">Model Latency</span>
+        <strong>{{ result.latency_ms }} ms</strong>
+      </div>
+      <div class="sim-param">
+        <span class="text-muted">Method</span>
+        <strong>{{ result.get('method', 'Logistic Regression') }}</strong>
+      </div>
+
+      <hr class="divider"/>
+      <p style="font-size:0.8rem;color:var(--text-dim);">
+        Probability bar:
+      </p>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar" style="width:{{ (result.probability*100)|int }}%;background:linear-gradient(90deg,{{ risk_color }},{{ risk_color }}88);"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SYMPTOMS SUMMARY -->
+  {% if symptoms %}
+  <div class="card mt-2 animate-fade-up">
+    <h3 style="font-size:1rem;font-weight:700;margin-bottom:1rem;">🔬 Symptoms Reported</h3>
+    <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+      {% for key, val in symptoms.items() %}
+        {% if val %}
+          <span style="background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);border-radius:999px;padding:0.3rem 0.75rem;font-size:0.82rem;color:#93c5fd;">
+            ✓ {{ symptom_labels.get(key, key) | replace('_',' ') | title }}
+          </span>
+        {% endif %}
+      {% endfor %}
+      {% if not symptoms.values() | list | select | list %}
+        <span class="text-muted">No specific symptoms selected.</span>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- CARE JOURNEY -->
+  <div class="card mt-2 animate-fade-up">
+    <h3 style="font-size:1rem;font-weight:700;margin-bottom:1.25rem;">🛤️ Suggested Care Journey</h3>
+    <div style="display:flex;align-items:center;gap:0;flex-wrap:wrap;">
+      {% set steps = [('🧑','Patient','Report symptoms'),('👩‍⚕️','ASHA Worker','Community screening'),('🏥','PHC','Primary evaluation'),('🏨','Hospital','Specialist care')] %}
+      {% for icon, label, desc in steps %}
+        <div style="flex:1;text-align:center;min-width:100px;">
+          <div style="font-size:2rem;margin-bottom:0.25rem;">{{ icon }}</div>
+          <div style="font-size:0.85rem;font-weight:700;">{{ label }}</div>
+          <div style="font-size:0.75rem;color:var(--text-muted);">{{ desc }}</div>
+        </div>
+        {% if not loop.last %}
+          <div style="color:var(--accent);font-size:1.25rem;padding:0 0.25rem;">→</div>
+        {% endif %}
+      {% endfor %}
+    </div>
+    <div style="margin-top:1rem;padding:0.75rem 1rem;background:rgba(255,255,255,0.03);border-radius:var(--radius-sm);font-size:0.82rem;color:var(--text-muted);">
+      {% if risk_class == 'high' %}
+        ⚡ <strong>Escalate immediately</strong> to Hospital/Emergency. Skip PHC if possible.
+      {% elif risk_class == 'medium' %}
+        📍 <strong>Visit PHC today.</strong> ASHA worker should accompany the patient.
+      {% else %}
+        🏠 <strong>Stay home and monitor.</strong> Contact ASHA worker if symptoms worsen.
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="d-flex gap-2 mt-3">
+    <a href="{{ url_for('predict.checker') }}" class="btn btn-primary">🔄 New Assessment</a>
+    <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline">📊 Dashboard</a>
+    <a href="{{ url_for('predict.history') }}" class="btn btn-outline">📋 History</a>
+  </div>
+
+  <div class="alert alert-warning mt-2">
+    ⚠️ <strong>Disclaimer:</strong> This is an AI-assisted screening tool for research/simulation purposes only.
+    It does not replace professional medical diagnosis. Always consult a qualified doctor.
+  </div>
+</div>
+{% endblock %}

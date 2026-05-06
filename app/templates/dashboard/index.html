@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container page-content">
+  <!-- HEADER -->
+  <div class="d-flex align-center justify-between mb-3">
+    <div>
+      <h1 class="section-title">📊 Dashboard</h1>
+      <p class="section-sub">
+        Welcome, <strong>{{ current_user.name }}</strong>
+        <span style="background:rgba({% if current_user.role=='asha' %}16,185,129{% else %}59,130,246{% endif %},0.15);color:{% if current_user.role=='asha' %}#34d399{% else %}#93c5fd{% endif %};padding:0.2rem 0.6rem;border-radius:999px;font-size:0.78rem;margin-left:0.5rem;">
+          {% if current_user.role == 'asha' %}👩‍⚕️ ASHA Worker{% else %}🧑 Patient{% endif %}
+        </span>
+      </p>
+    </div>
+    <a href="{{ url_for('predict.checker') }}" class="btn btn-primary btn-sm">+ New Assessment</a>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-grid animate-fade-up">
+    <div class="stat-card">
+      <div class="stat-icon">🩺</div>
+      <div class="stat-value" style="color:#93c5fd">{{ total_predictions }}</div>
+      <div class="stat-label">Total Assessments</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">🚨</div>
+      <div class="stat-value" style="color:#f87171">{{ high_risk }}</div>
+      <div class="stat-label">High Risk Cases</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">⚠️</div>
+      <div class="stat-value" style="color:#fbbf24">{{ medium_risk }}</div>
+      <div class="stat-label">Medium Risk Cases</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">✅</div>
+      <div class="stat-value" style="color:#34d399">{{ low_risk }}</div>
+      <div class="stat-label">Low Risk Cases</div>
+    </div>
+  </div>
+
+  <div class="grid-2 mt-2">
+    <!-- DISEASE DISTRIBUTION -->
+    <div class="card animate-fade-up">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:1rem;">🧠 Disease Distribution</h3>
+      {% if disease_counts %}
+        <div class="chart-container" style="min-height:200px;">
+          <canvas id="diseaseChart"></canvas>
+        </div>
+      {% else %}
+        <div class="text-center" style="padding:2rem;color:var(--text-muted);">
+          No prediction data yet.<br/>
+          <a href="{{ url_for('predict.checker') }}" class="btn btn-primary btn-sm mt-1">Start Assessment</a>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- MODEL METRICS -->
+    <div class="card animate-fade-up">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:1rem;">🤖 ML Model Accuracy</h3>
+      {% if metrics %}
+        {% for disease, m in metrics.items() %}
+        <div style="margin-bottom:0.9rem;">
+          <div class="d-flex align-center justify-between" style="margin-bottom:0.3rem;">
+            <span style="font-size:0.88rem;text-transform:capitalize;font-weight:600;">{{ disease }}</span>
+            <span style="font-size:0.82rem;color:var(--text-muted);">F1: {{ (m.f1*100)|round(1) }}%</span>
+          </div>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar" style="width:{{ (m.accuracy*100)|round(0)|int }}%;"></div>
+          </div>
+          <div style="font-size:0.75rem;color:var(--text-dim);margin-top:0.2rem;">
+            Acc: {{ (m.accuracy*100)|round(1) }}% · Prec: {{ (m.precision*100)|round(1) }}% · Rec: {{ (m.recall*100)|round(1) }}%
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="text-muted text-center" style="padding:1.5rem;">Models not yet trained.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- RECENT PREDICTIONS -->
+  <div class="card mt-2 animate-fade-up">
+    <div class="d-flex align-center justify-between mb-2">
+      <h3 style="font-size:1rem;font-weight:700;">🕐 Recent Assessments</h3>
+      <a href="{{ url_for('predict.history') }}" style="font-size:0.82rem;color:var(--accent);">View all →</a>
+    </div>
+    {% if predictions %}
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Disease</th><th>Risk</th><th>Probability</th><th>Latency</th><th>Date</th></tr></thead>
+        <tbody>
+          {% for p in predictions %}
+          <tr>
+            <td style="text-transform:capitalize;font-weight:600;">{{ p.disease }}</td>
+            <td><span class="risk-badge risk-{{ p.risk_level|lower }}">{{ p.risk_level }}</span></td>
+            <td>{{ (p.probability*100)|round(1) }}%</td>
+            <td>{{ p.model_latency_ms }} ms</td>
+            <td style="font-size:0.8rem;color:var(--text-muted);">{{ p.created_at.strftime('%d %b %H:%M') }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="text-muted text-center" style="padding:1.5rem;">No assessments yet. <a href="{{ url_for('predict.checker') }}" style="color:var(--accent);">Start now →</a></p>
+    {% endif %}
+  </div>
+
+  <!-- SIMULATION HISTORY -->
+  {% if sim_runs %}
+  <div class="card mt-2 animate-fade-up">
+    <div class="d-flex align-center justify-between mb-2">
+      <h3 style="font-size:1rem;font-weight:700;">⚙️ Recent Simulations</h3>
+      <a href="{{ url_for('simulation.panel') }}" style="font-size:0.82rem;color:var(--accent);">Run new →</a>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Bandwidth</th><th>Model</th><th>Accuracy</th><th>Detection</th><th>Avg Latency</th><th>Date</th></tr></thead>
+        <tbody>
+          {% for s in sim_runs %}
+          <tr>
+            <td>{{ s.bandwidth }}</td>
+            <td>{{ s.model_size }}</td>
+            <td>{{ (s.accuracy*100)|round(1) }}%</td>
+            <td>{{ (s.detection_rate*100)|round(1) }}%</td>
+            <td>{{ s.avg_latency_ms|round(0)|int }} ms</td>
+            <td style="font-size:0.8rem;color:var(--text-muted);">{{ s.created_at.strftime('%d %b %H:%M') }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- QUICK ACTIONS -->
+  <div class="grid-3 mt-2">
+    <a href="{{ url_for('predict.checker') }}" class="card" style="text-align:center;text-decoration:none;transition:var(--transition);">
+      <div style="font-size:2rem;margin-bottom:0.5rem;">🩺</div>
+      <strong>New Assessment</strong>
+      <p style="font-size:0.82rem;color:var(--text-muted);margin-top:0.3rem;">Check symptoms now</p>
+    </a>
+    <a href="{{ url_for('simulation.panel') }}" class="card" style="text-align:center;text-decoration:none;transition:var(--transition);">
+      <div style="font-size:2rem;margin-bottom:0.5rem;">⚙️</div>
+      <strong>Run Simulation</strong>
+      <p style="font-size:0.82rem;color:var(--text-muted);margin-top:0.3rem;">Test bandwidth scenarios</p>
+    </a>
+    <a href="{{ url_for('predict.history') }}" class="card" style="text-align:center;text-decoration:none;transition:var(--transition);">
+      <div style="font-size:2rem;margin-bottom:0.5rem;">📋</div>
+      <strong>View History</strong>
+      <p style="font-size:0.82rem;color:var(--text-muted);margin-top:0.3rem;">All past assessments</p>
+    </a>
+  </div>
+</div>
+
+<script>
+{% if disease_counts %}
+new Chart(document.getElementById('diseaseChart'), {
+  type: 'doughnut',
+  data: {
+    labels: {{ disease_counts.keys()|list|tojson }},
+    datasets: [{
+      data: {{ disease_counts.values()|list|tojson }},
+      backgroundColor: ['rgba(59,130,246,0.8)','rgba(139,92,246,0.8)','rgba(16,185,129,0.8)','rgba(245,158,11,0.8)'],
+      borderColor: '#060b14', borderWidth: 2
+    }]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    plugins: { legend: { position:'bottom', labels:{ color:'#94a3b8', font:{size:12} } } }
+  }
+});
+{% endif %}
+</script>
+{% endblock %}

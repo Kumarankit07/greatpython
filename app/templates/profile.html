@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="container page-content">
+  <div class="grid-2" style="align-items:start;">
+
+    <!-- LEFT: Profile Card -->
+    <div>
+      <div class="card text-center mb-2 animate-fade-up">
+        <div class="avatar-circle">{{ current_user.name[0].upper() }}</div>
+        <h2 style="font-family:'Outfit',sans-serif;font-size:1.5rem;font-weight:800;">{{ current_user.name }}</h2>
+        <div style="margin:.5rem 0;">
+          {% if current_user.role == 'asha' %}
+            <span style="background:rgba(52,211,153,.15);color:#34d399;padding:.28rem .8rem;border-radius:999px;font-size:.8rem;font-weight:700;border:1px solid rgba(52,211,153,.3);">👩‍⚕️ ASHA Worker</span>
+          {% else %}
+            <span style="background:rgba(34,211,238,.15);color:var(--p1);padding:.28rem .8rem;border-radius:999px;font-size:.8rem;font-weight:700;border:1px solid rgba(34,211,238,.3);">🧑 Patient</span>
+          {% endif %}
+        </div>
+        <p class="text-muted" style="font-size:.88rem;margin-top:.4rem;">{{ current_user.email }}</p>
+        {% if current_user.village or current_user.district %}
+        <p class="text-muted" style="font-size:.83rem;margin-top:.25rem;">
+          📍 {{ [current_user.village, current_user.district, current_user.state] | select | join(', ') }}
+        </p>
+        {% endif %}
+        {% if current_user.phone %}
+        <p class="text-muted" style="font-size:.83rem;margin-top:.2rem;">📞 {{ current_user.phone }}</p>
+        {% endif %}
+        <p class="text-muted" style="font-size:.78rem;margin-top:.5rem;">Member since {{ current_user.created_at.strftime('%B %Y') }}</p>
+      </div>
+
+      <!-- STATS -->
+      <div class="card mb-2 animate-fade-up">
+        <h3 style="font-size:.95rem;font-weight:700;margin-bottom:1rem;">📊 Activity Summary</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;">
+          <div style="text-align:center;padding:.9rem;background:var(--bg-glass);border:1px solid var(--border);border-radius:var(--rs);">
+            <div style="font-family:'Outfit',sans-serif;font-size:1.8rem;font-weight:800;color:var(--p1);">{{ total }}</div>
+            <div style="font-size:.78rem;color:var(--text2);">Total Assessments</div>
+          </div>
+          <div style="text-align:center;padding:.9rem;background:var(--bg-glass);border:1px solid var(--border);border-radius:var(--rs);">
+            <div style="font-family:'Outfit',sans-serif;font-size:1.8rem;font-weight:800;color:var(--danger);">{{ high_risk }}</div>
+            <div style="font-size:.78rem;color:var(--text2);">High Risk Detected</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ASHA-SPECIFIC INFO -->
+      {% if current_user.role == 'asha' %}
+      <div class="card animate-fade-up" style="border-left:3px solid var(--p3);">
+        <h3 style="font-size:.95rem;font-weight:700;margin-bottom:.75rem;">👩‍⚕️ ASHA Worker Tools</h3>
+        <div style="display:flex;flex-direction:column;gap:.6rem;">
+          <a href="{{ url_for('predict.checker') }}" class="btn btn-primary btn-sm" style="justify-content:center;">🩺 Screen a Patient</a>
+          <a href="{{ url_for('simulation.panel') }}" class="btn btn-outline btn-sm" style="justify-content:center;">⚙️ Run Simulation</a>
+          <a href="{{ url_for('predict.history') }}" class="btn btn-outline btn-sm" style="justify-content:center;">📋 All Screening Records</a>
+        </div>
+        <hr class="divider"/>
+        <p style="font-size:.82rem;color:var(--text2);line-height:1.6;">
+          <strong>Protocol reminder:</strong><br/>
+          🔴 High risk → Call 108 immediately<br/>
+          🟡 Medium risk → PHC visit within 24h<br/>
+          🟢 Low risk → Home monitoring + follow-up
+        </p>
+      </div>
+      {% else %}
+      <div class="card animate-fade-up" style="border-left:3px solid var(--p1);">
+        <h3 style="font-size:.95rem;font-weight:700;margin-bottom:.75rem;">🧑 Patient Quick Actions</h3>
+        <div style="display:flex;flex-direction:column;gap:.6rem;">
+          <a href="{{ url_for('predict.checker') }}" class="btn btn-primary btn-sm" style="justify-content:center;">🩺 Check My Symptoms</a>
+          <a href="{{ url_for('predict.history') }}" class="btn btn-outline btn-sm" style="justify-content:center;">📋 My Health History</a>
+          <a href="{{ url_for('main.diseases') }}" class="btn btn-outline btn-sm" style="justify-content:center;">🧠 Learn About Diseases</a>
+        </div>
+        <hr class="divider"/>
+        <div class="alert alert-info" style="font-size:.8rem;margin-top:.5rem;">
+          ℹ️ Emergency? Call <strong>108</strong> (free ambulance, all India).
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- RIGHT: Edit Profile + Recent Activity -->
+    <div>
+      <div class="card mb-2 animate-fade-up">
+        <h3 style="font-size:.95rem;font-weight:700;margin-bottom:1.1rem;">✏️ Edit Profile</h3>
+        <form method="POST" action="{{ url_for('main.update_profile') }}">
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Full Name</label>
+              <input type="text" name="name" class="form-control" value="{{ current_user.name }}" required/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone</label>
+              <input type="tel" name="phone" class="form-control" value="{{ current_user.phone or '' }}"/>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Village / Town</label>
+              <input type="text" name="village" class="form-control" value="{{ current_user.village or '' }}"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">District</label>
+              <input type="text" name="district" class="form-control" value="{{ current_user.district or '' }}"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">State</label>
+            <select name="state" class="form-control">
+              {% for s in ['Uttar Pradesh','Bihar','Rajasthan','Madhya Pradesh','Jharkhand','Odisha','West Bengal','Assam','Chhattisgarh','Maharashtra'] %}
+                <option {% if current_user.state == s %}selected{% endif %}>{{ s }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">💾 Save Changes</button>
+        </form>
+      </div>
+
+      <!-- RECENT PREDICTIONS -->
+      <div class="card animate-fade-up">
+        <div class="d-flex align-center justify-between mb-2">
+          <h3 style="font-size:.95rem;font-weight:700;">🕐 Recent Assessments</h3>
+          <a href="{{ url_for('predict.history') }}" style="font-size:.8rem;color:var(--p1);">View all →</a>
+        </div>
+        {% if predictions %}
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Disease</th><th>Risk</th><th>Probability</th><th>Date</th></tr></thead>
+            <tbody>
+              {% for p in predictions %}
+              <tr>
+                <td style="text-transform:capitalize;font-weight:600;">{{ p.disease }}</td>
+                <td><span class="risk-badge risk-{{ p.risk_level|lower }}">{{ p.risk_level }}</span></td>
+                <td>{{ (p.probability*100)|round(1) }}%</td>
+                <td style="font-size:.78rem;color:var(--text2);">{{ p.created_at.strftime('%d %b %H:%M') }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <p class="text-muted text-center" style="padding:1.5rem;">
+          No assessments yet. <a href="{{ url_for('predict.checker') }}" style="color:var(--p1);">Start now →</a>
+        </p>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

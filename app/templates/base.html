@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="AI-Powered Neurological Symptom Checker for Rural India."/>
+  <title>{% block title %}NeuroCare AI{% endblock %} | NeuroCare India</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}"/>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a href="{{ url_for('main.home') }}" class="navbar-brand">
+    <div class="brand-icon">🧠</div>
+    NeuroCare <span style="color:var(--p1)">AI</span>
+  </a>
+
+  <div class="nav-links">
+    <a href="{{ url_for('main.home') }}" {% if request.endpoint=='main.home' %}class="active"{% endif %}>Home</a>
+    <a href="{{ url_for('main.diseases') }}" {% if request.endpoint=='main.diseases' %}class="active"{% endif %} class="hide-mobile">Diseases</a>
+    {% if current_user.is_authenticated %}
+      <a href="{{ url_for('dashboard.index') }}" {% if 'dashboard' in request.endpoint %}class="active"{% endif %}>Dashboard</a>
+      <a href="{{ url_for('predict.checker') }}" {% if 'predict' in request.endpoint %}class="active"{% endif %} class="hide-mobile">Symptom Checker</a>
+      <a href="{{ url_for('simulation.panel') }}" {% if 'simulation' in request.endpoint %}class="active"{% endif %}" class="hide-mobile">Simulation</a>
+      <a href="{{ url_for('main.profile') }}" {% if request.endpoint=='main.profile' %}class="active"{% endif %}" class="hide-mobile">Profile</a>
+    {% endif %}
+    <a href="{{ url_for('main.about') }}" {% if request.endpoint=='main.about' %}class="active"{% endif %} class="hide-mobile">About</a>
+
+    <!-- THEME TOGGLE -->
+    <button class="theme-toggle" id="themeToggle" title="Toggle light/dark mode">🌙 Dark</button>
+
+    {% if current_user.is_authenticated %}
+      <a href="{{ url_for('auth.logout') }}" class="btn btn-outline btn-sm">Logout</a>
+    {% else %}
+      <a href="{{ url_for('auth.login') }}" class="nav-cta btn btn-sm">Login</a>
+    {% endif %}
+  </div>
+</nav>
+
+<!-- FLASH MESSAGES -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div style="position:fixed;top:70px;right:1.5rem;z-index:9999;display:flex;flex-direction:column;gap:.5rem;max-width:360px;">
+      {% for cat, msg in messages %}
+        <div class="alert alert-{{ cat }}" style="animation:fadeDown .4s ease both;">
+          <span>{% if cat=='success' %}✅{% elif cat=='danger' %}❌{% elif cat=='warning' %}⚠️{% else %}ℹ️{% endif %}</span>
+          <span>{{ msg }}</span>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+{% block content %}{% endblock %}
+
+<footer>
+  <p><strong>NeuroCare AI</strong> — AI-Powered Neurological Symptom Checker for Rural India</p>
+  <p style="margin-top:.4rem">For ASHA workers &amp; patients · Low-bandwidth optimised · Research platform</p>
+</footer>
+
+<!-- ═══ CHATBOT ════════════════════════════════════════════════════ -->
+<div class="chat-window" id="chatWindow">
+  <div class="chat-header">
+    <div class="chat-header-info">
+      <div class="chat-avatar">🤖</div>
+      <div>
+        <strong>NeuroBot</strong><br/>
+        <span>● Online — Ask me anything</span>
+      </div>
+    </div>
+    <button class="chat-close" onclick="toggleChat()" title="Close">✕</button>
+  </div>
+  <div class="chat-messages" id="chatMessages">
+    <div class="msg msg-bot">👋 Hi! I'm <strong>NeuroBot</strong>. Ask me about stroke, epilepsy, meningitis, encephalitis, emergency contacts, or how to use this platform.</div>
+  </div>
+  <div class="chat-suggestions">
+    <span class="chat-chip" onclick="sendChip('What are stroke symptoms?')">Stroke symptoms</span>
+    <span class="chat-chip" onclick="sendChip('Epilepsy first aid')">Seizure first aid</span>
+    <span class="chat-chip" onclick="sendChip('Emergency ambulance number')">Emergency 108</span>
+    <span class="chat-chip" onclick="sendChip('How accurate is this AI?')">AI accuracy</span>
+  </div>
+  <div class="chat-input-row">
+    <input type="text" class="chat-input" id="chatInput" placeholder="Ask about symptoms, diseases…" onkeydown="if(event.key==='Enter')sendChat()"/>
+    <button class="chat-send" onclick="sendChat()">➤</button>
+  </div>
+</div>
+<button class="chat-fab" id="chatFab" onclick="toggleChat()" title="Chat with NeuroBot">💬</button>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+<script>
+// ── CHATBOT ──────────────────────────────────────────────────────────
+let chatOpen = false;
+function toggleChat(){
+  chatOpen = !chatOpen;
+  document.getElementById('chatWindow').classList.toggle('open', chatOpen);
+  document.getElementById('chatFab').textContent = chatOpen ? '✕' : '💬';
+  if(chatOpen) document.getElementById('chatInput').focus();
+}
+function sendChip(txt){ document.getElementById('chatInput').value = txt; sendChat(); }
+async function sendChat(){
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if(!msg) return;
+  input.value = '';
+  appendMsg(msg, 'user');
+  appendMsg('…', 'bot', 'typing-indicator');
+  try {
+    const res = await fetch('/api/chat', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({message: msg})
+    });
+    const data = await res.json();
+    document.getElementById('typing-indicator')?.remove();
+    appendMsg(data.reply, 'bot');
+  } catch(e) {
+    document.getElementById('typing-indicator')?.remove();
+    appendMsg('Sorry, I could not connect. Please try again.', 'bot');
+  }
+}
+function appendMsg(text, who, id=''){
+  const box = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'msg msg-' + who;
+  if(id) div.id = id;
+  // Simple markdown: **bold**
+  div.innerHTML = text.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br/>');
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+</script>
+
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+{% block title %}Symptom Checker{% endblock %}
+
+{% block content %}
+<div class="container page-content">
+  <div class="d-flex align-center justify-between mb-3">
+    <div>
+      <h1 class="section-title">🩺 Symptom Checker</h1>
+      <p class="section-sub">Select a disease and enter patient details to receive an AI-powered risk assessment.</p>
+    </div>
+    <div style="font-size:0.82rem;color:var(--text-muted);text-align:right;">
+      {% if current_user.is_authenticated and current_user.role == 'asha' %}
+        <span style="background:rgba(16,185,129,0.15);color:#34d399;padding:0.3rem 0.75rem;border-radius:999px;border:1px solid rgba(16,185,129,0.3);">👩‍⚕️ ASHA Worker Mode</span>
+      {% else %}
+        <span style="background:rgba(59,130,246,0.15);color:#93c5fd;padding:0.3rem 0.75rem;border-radius:999px;border:1px solid rgba(59,130,246,0.3);">🧑 Patient Mode</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- DISEASE SELECTOR -->
+  <div class="disease-tabs" id="diseaseTabs">
+    {% for d in ['stroke','epilepsy','meningitis','encephalitis'] %}
+      <button class="disease-tab {% if loop.first %}active{% endif %}" onclick="selectDisease('{{ d }}')">
+        {{ {'stroke':'🔴 Stroke','epilepsy':'⚡ Epilepsy','meningitis':'🦠 Meningitis','encephalitis':'🌡️ Encephalitis'}[d] }}
+      </button>
+    {% endfor %}
+  </div>
+
+  <form method="POST" action="{{ url_for('predict.run_prediction') }}" id="symptomForm">
+    <input type="hidden" name="disease" id="diseaseInput" value="stroke"/>
+
+    <div class="grid-2">
+      <!-- LEFT COLUMN: Basic Info -->
+      <div>
+        <div class="card mb-2">
+          <h3 style="font-size:1rem;font-weight:700;margin-bottom:1rem;">👤 Patient Information</h3>
+          
+          {% if current_user.is_authenticated and current_user.role == 'asha' %}
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Patient Name *</label>
+              <input type="text" name="patient_name" class="form-control" required placeholder="Full Name" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Aadhaar No. *</label>
+              <input type="text" name="patient_aadhaar" class="form-control" id="aadhaarInput" required placeholder="12-digit Aadhaar" pattern="\d{12}" title="12 digit Aadhaar number" />
+            </div>
+          </div>
+          <div id="patientHistoryAlert" style="display:none; margin-bottom:1rem; padding:10px; background:rgba(59,130,246,0.1); border-left:4px solid #3b82f6; border-radius:4px; font-size:0.85rem; color:var(--text-primary);">
+            <strong>Patient Record Found!</strong><br>
+            <span id="patientHistoryText"></span>
+            <div style="margin-top: 0.5rem;" id="downloadExcelContainer"></div>
+          </div>
+          {% endif %}
+
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Age *</label>
+              <input type="number" name="age" class="form-control" min="1" max="110" value="45" required id="ageInput"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Gender *</label>
+              <select name="gender" class="form-control">
+                <option>Male</option><option>Female</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">BMI</label>
+              <input type="number" name="bmi" class="form-control" step="0.1" min="10" max="60" value="24.0"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Avg. Glucose (mg/dL)</label>
+              <input type="number" name="avg_glucose_level" class="form-control" step="0.1" min="40" max="400" value="100"/>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Body Temperature (°C)</label>
+              <input type="number" name="temperature" class="form-control" step="0.1" min="35" max="43" value="37.0"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Symptom Duration (hours)</label>
+              <input type="number" name="duration_hours" class="form-control" min="0" max="720" value="4"/>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Ever Married</label>
+              <select name="ever_married" class="form-control"><option>Yes</option><option>No</option></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Smoking Status</label>
+              <select name="smoking_status" class="form-control">
+                <option value="0">Never Smoked</option>
+                <option value="1">Formerly Smoked</option>
+                <option value="2">Currently Smokes</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- BANDWIDTH SETTING -->
+        <div class="card">
+          <h3 style="font-size:1rem;font-weight:700;margin-bottom:1rem;">📡 Network Condition</h3>
+          <div class="form-group">
+            <label class="form-label">Simulated Bandwidth</label>
+            <select name="bandwidth" class="form-control">
+              <option value="offline">Offline (Cached)</option>
+              <option value="10kbps">10 kbps (Very Slow)</option>
+              <option value="50kbps" selected>50 kbps (Rural)</option>
+              <option value="100kbps">100 kbps (Basic)</option>
+              <option value="1mbps">1 Mbps (Good)</option>
+            </select>
+          </div>
+          <div class="alert alert-info" style="font-size:0.82rem;">
+            ℹ️ Bandwidth setting simulates rural connectivity in the prediction pipeline.
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN: Symptoms -->
+      <div class="card">
+        <h3 style="font-size:1rem;font-weight:700;margin-bottom:0.5rem;">🔬 Symptom Assessment</h3>
+        <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:1rem;">Select all symptoms the patient is currently experiencing:</p>
+
+        {% for disease, symptoms in symptom_labels.items() %}
+        <div id="symptoms-{{ disease }}" class="symptom-panel" style="{% if not loop.first %}display:none;{% endif %}">
+          <div class="check-grid">
+            {% for key, label in symptoms %}
+            <div class="check-item">
+              <input type="checkbox" name="{{ key }}" id="chk-{{ disease }}-{{ key }}"/>
+              <label for="chk-{{ disease }}-{{ key }}">{{ label }}</label>
+            </div>
+            {% endfor %}
+          </div>
+
+          <!-- Pre-existing conditions for all diseases -->
+          <hr class="divider"/>
+          <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:0.75rem;">Pre-existing conditions:</p>
+          <div class="check-grid">
+            <div class="check-item">
+              <input type="checkbox" name="hypertension" id="chk-{{ disease }}-htn"/>
+              <label for="chk-{{ disease }}-htn">Hypertension</label>
+            </div>
+            <div class="check-item">
+              <input type="checkbox" name="heart_disease" id="chk-{{ disease }}-hd"/>
+              <label for="chk-{{ disease }}-hd">Heart Disease</label>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+
+        <div style="margin-top:1.5rem;">
+          <button type="submit" class="btn btn-primary btn-lg" style="width:100%;justify-content:center;" id="submitBtn">
+            🧠 Analyse Symptoms
+          </button>
+          <p style="font-size:0.78rem;color:var(--text-dim);text-align:center;margin-top:0.5rem;">
+            Prediction uses AI model + rule-based fallback
+          </p>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <!-- RECENT PREDICTIONS LINK -->
+  <div class="text-center mt-2">
+    <a href="{{ url_for('predict.history') }}" class="btn btn-outline btn-sm">📋 View Prediction History</a>
+  </div>
+</div>
+
+<script>
+const diseases = ['stroke','epilepsy','meningitis','encephalitis'];
+function selectDisease(d) {
+  document.getElementById('diseaseInput').value = d;
+  document.querySelectorAll('.disease-tab').forEach((t,i) => {
+    t.classList.toggle('active', diseases[i] === d);
+  });
+  document.querySelectorAll('.symptom-panel').forEach(p => p.style.display = 'none');
+  document.getElementById('symptoms-' + d).style.display = 'block';
+  // Clear all checkboxes
+  document.querySelectorAll('.symptom-panel input[type="checkbox"]').forEach(c => c.checked = false);
+}
+
+{% if current_user.is_authenticated and current_user.role == 'asha' %}
+document.getElementById('aadhaarInput').addEventListener('blur', function() {
+    const aadhaar = this.value.trim();
+    if (aadhaar.length === 12) {
+        fetch(`/predict/api/history/${aadhaar}`)
+        .then(res => res.json())
+        .then(data => {
+            const alertBox = document.getElementById('patientHistoryAlert');
+            const historyText = document.getElementById('patientHistoryText');
+            const excelContainer = document.getElementById('downloadExcelContainer');
+            if (data.found && data.predictions.length > 0) {
+                alertBox.style.display = 'block';
+                let pastDiseases = data.predictions.map(p => `<strong>${p.disease}</strong> (${p.date})`).join(', ');
+                historyText.innerHTML = `Past predictions: ${pastDiseases}. New assessment will be linked to this patient.`;
+                excelContainer.innerHTML = `<a href="/predict/export/${aadhaar}" class="btn btn-outline" style="padding:0.25rem 0.5rem;font-size:0.75rem;margin-top:0.25rem;">📥 Download History (Excel)</a>`;
+            } else {
+                alertBox.style.display = 'none';
+                excelContainer.innerHTML = '';
+            }
+        }).catch(err => console.error(err));
+    }
+});
+{% endif %}
+</script>
+{% endblock %}

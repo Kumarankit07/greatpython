@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Prediction History{% endblock %}
+
+{% block content %}
+<div class="container page-content">
+  <div class="d-flex align-center justify-between mb-3">
+    <div>
+      <h1 class="section-title">📋 Prediction History</h1>
+      <p class="section-sub">Your last 50 symptom assessments.</p>
+    </div>
+    <div class="d-flex gap-2">
+      {% if current_user.role == 'asha' %}
+      <a href="{{ url_for('predict.export_all_history') }}" class="btn btn-outline btn-sm">📥 Download All Data (Excel)</a>
+      {% endif %}
+      <a href="{{ url_for('predict.checker') }}" class="btn btn-primary btn-sm">+ New Check</a>
+    </div>
+  </div>
+
+  {% if predictions %}
+  <div class="card">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            {% if current_user.role == 'asha' %}
+            <th>Patient Name</th>
+            <th>Aadhaar No.</th>
+            {% endif %}
+            <th>Disease</th>
+            <th>Risk</th>
+            <th>Probability</th>
+            <th>Recommendation</th>
+            <th>Date</th>
+            {% if current_user.role == 'asha' %}
+            <th>Action</th>
+            {% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in predictions %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            {% if current_user.role == 'asha' %}
+            <td><strong>{{ p.patient_name or 'N/A' }}</strong></td>
+            <td><span style="font-family:monospace; font-size:0.85rem; color:var(--text-muted);">{{ p.patient_aadhaar or 'N/A' }}</span></td>
+            {% endif %}
+            <td><strong style="text-transform:capitalize;">{{ p.disease }}</strong></td>
+            <td><span class="risk-badge risk-{{ p.risk_level | lower }}">{{ p.risk_level }}</span></td>
+            <td>{{ (p.probability * 100) | round(1) }}%</td>
+            <td style="max-width:220px;font-size:0.82rem;">{{ p.recommendation }}</td>
+            <td style="font-size:0.8rem;color:var(--text-muted);">{{ p.created_at.strftime('%d %b %Y %H:%M') }}</td>
+            {% if current_user.role == 'asha' %}
+            <td>
+              {% if p.patient_aadhaar %}
+              <a href="{{ url_for('predict.export_patient_history', aadhaar=p.patient_aadhaar) }}" class="btn btn-outline" style="padding:0.25rem 0.5rem;font-size:0.75rem;" title="Download Patient History (Excel)">📥 Excel</a>
+              {% endif %}
+            </td>
+            {% endif %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% else %}
+  <div class="card text-center" style="padding:3rem;">
+    <div style="font-size:3rem;margin-bottom:1rem;">🩺</div>
+    <h3 style="margin-bottom:0.5rem;">No predictions yet</h3>
+    <p class="text-muted mb-2">Run your first symptom assessment to see results here.</p>
+    <a href="{{ url_for('predict.checker') }}" class="btn btn-primary">Start Symptom Check</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

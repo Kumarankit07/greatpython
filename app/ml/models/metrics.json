@@ -1,0 +1,118 @@
+{
+  "stroke": {
+    "accuracy": 0.843,
+    "precision": 0.6329,
+    "recall": 0.8299,
+    "f1": 0.7181,
+    "confusion_matrix": [
+      [
+        643,
+        116
+      ],
+      [
+        41,
+        200
+      ]
+    ],
+    "features": [
+      "age",
+      "gender",
+      "hypertension",
+      "heart_disease",
+      "ever_married",
+      "avg_glucose_level",
+      "bmi",
+      "smoking_status",
+      "slurred_speech",
+      "weakness",
+      "vision_issues"
+    ]
+  },
+  "epilepsy": {
+    "accuracy": 0.855,
+    "precision": 0.8203,
+    "recall": 0.8416,
+    "f1": 0.8308,
+    "confusion_matrix": [
+      [
+        499,
+        78
+      ],
+      [
+        67,
+        356
+      ]
+    ],
+    "features": [
+      "age",
+      "gender",
+      "seizure_history",
+      "loss_of_consciousness",
+      "jerking_movements",
+      "aura",
+      "postictal_confusion",
+      "family_history",
+      "eeg_abnormal",
+      "duration_minutes"
+    ]
+  },
+  "meningitis": {
+    "accuracy": 0.824,
+    "precision": 0.8436,
+    "recall": 0.8039,
+    "f1": 0.8233,
+    "confusion_matrix": [
+      [
+        414,
+        76
+      ],
+      [
+        100,
+        410
+      ]
+    ],
+    "features": [
+      "age",
+      "gender",
+      "fever",
+      "headache",
+      "neck_stiffness",
+      "photophobia",
+      "vomiting",
+      "rash",
+      "altered_consciousness",
+      "kernig_sign",
+      "temperature"
+    ]
+  },
+  "encephalitis": {
+    "accuracy": 0.94,
+    "precision": 1.0,
+    "recall": 0.9268,
+    "f1": 0.962,
+    "confusion_matrix": [
+      [
+        18,
+        0
+      ],
+      [
+        6,
+        76
+      ]
+    ],
+    "features": [
+      "age",
+      "gender",
+      "fever",
+      "headache",
+      "seizures",
+      "altered_consciousness",
+      "neck_stiffness",
+      "vomiting",
+      "photophobia",
+      "confusion",
+      "duration_days",
+      "temperature"
+    ]
+  }
+}

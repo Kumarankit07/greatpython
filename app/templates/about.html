@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}About{% endblock %}
+
+{% block content %}
+<div class="container page-content">
+  <div class="text-center mb-3">
+    <div class="hero-badge">🔬 Research Platform · B.Tech / ML Project</div>
+    <h1 class="section-title" style="font-size:2.2rem;">About NeuroCare AI</h1>
+    <p class="section-sub" style="max-width:650px;margin:0 auto;">
+      An AI-powered simulation platform for testing neurological disease triage under real rural India constraints.
+    </p>
+  </div>
+
+  <!-- PROBLEM STATEMENT -->
+  <div class="card mb-2 animate-fade-up" style="border-left:3px solid var(--accent);">
+    <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:0.75rem;">⚠️ Problem Statement</h2>
+    <p style="color:var(--text-muted);line-height:1.8;">
+      Rural India faces a critical gap in neurological care: poor internet connectivity (&lt;50 kbps),
+      limited specialist access, and delayed diagnosis of time-sensitive diseases like Stroke and Meningitis.
+      <strong style="color:var(--text-primary);">NeuroCare AI</strong> simulates how AI triage systems
+      perform under these real-world constraints — before deployment.
+    </p>
+    <div style="display:flex;flex-wrap:wrap;gap:0.75rem;margin-top:1rem;">
+      {% for icon, fact in [
+        ('📡','&lt;50 kbps rural bandwidth'),
+        ('👨‍⚕️','1 doctor per 10,000 people'),
+        ('⏱️','Hours delay in stroke care'),
+        ('🧠','4 neurological diseases targeted')
+      ] %}
+      <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:var(--radius-sm);padding:0.5rem 1rem;font-size:0.85rem;">
+        {{ icon }} <span style="color:var(--text-muted);">{{ fact }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- TECH STACK -->
+  <div class="grid-2 mb-2">
+    <div class="card animate-fade-up">
+      <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:1rem;">🛠️ Tech Stack</h2>
+      {% for cat, items in [
+        ('Backend', ['Flask (Python)', 'SQLAlchemy + SQLite', 'Flask-Login']),
+        ('ML', ['Scikit-learn (Logistic Regression)', 'Pandas / NumPy', 'Joblib (model caching)']),
+        ('Frontend', ['HTML5 + Vanilla CSS', 'Chart.js (lightweight)', 'Minimal JavaScript']),
+        ('Data', ['Stroke — Kaggle (fedesoriano)', 'Epilepsy — Kaggle EEG dataset', 'Meningitis — Kaggle', 'Encephalitis — Static CSV'])
+      ] %}
+      <div style="margin-bottom:0.9rem;">
+        <div style="font-size:0.78rem;font-weight:700;color:var(--accent);letter-spacing:0.05em;margin-bottom:0.4rem;">{{ cat }}</div>
+        {% for item in items %}
+        <div style="font-size:0.88rem;color:var(--text-muted);padding:0.2rem 0;">• {{ item }}</div>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="card animate-fade-up">
+      <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:1rem;">🎯 Success Criteria</h2>
+      {% for done, item in [
+        (true, 'AI detection accuracy > 75%'),
+        (true, 'System works under < 50 kbps'),
+        (true, 'Simulation shows reduced referral time'),
+        (true, 'Clear trade-offs demonstrated (accuracy vs bandwidth)'),
+        (true, 'Offline mode with cached predictions'),
+        (true, 'Role-based access (Patient + ASHA Worker)')
+      ] %}
+      <div style="display:flex;align-items:center;gap:0.75rem;padding:0.5rem 0;border-bottom:1px solid var(--border);">
+        <span style="color:{% if done %}#34d399{% else %}#64748b{% endif %};font-size:1rem;">{% if done %}✅{% else %}⬜{% endif %}</span>
+        <span style="font-size:0.88rem;color:var(--text-muted);">{{ item }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- SIMULATION FLOW -->
+  <div class="card mb-2 animate-fade-up">
+    <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:1.25rem;">🛤️ Rural Healthcare Simulation Flow</h2>
+    <div style="display:flex;align-items:center;justify-content:space-around;flex-wrap:wrap;gap:1rem;">
+      {% for icon, label, sub in [
+        ('🧑','Patient','Synthetic profile generated'),
+        ('🔊','Symptom Noise','Realistic error injection'),
+        ('👩‍⚕️','ASHA Worker','Community screening'),
+        ('🧠','AI Triage','Risk classification'),
+        ('🏥','PHC','Primary care evaluation'),
+        ('🏨','Hospital','Emergency referral')
+      ] %}
+      <div style="text-align:center;min-width:80px;">
+        <div style="font-size:2rem;margin-bottom:0.25rem;">{{ icon }}</div>
+        <div style="font-size:0.85rem;font-weight:700;">{{ label }}</div>
+        <div style="font-size:0.72rem;color:var(--text-dim);margin-top:0.2rem;">{{ sub }}</div>
+      </div>
+      {% if not loop.last %}
+      <div style="color:var(--accent);font-size:1.5rem;font-weight:300;">→</div>
+      {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- ML DETAILS -->
+  <div class="card mb-2 animate-fade-up">
+    <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:1rem;">🤖 ML Architecture</h2>
+    <div class="grid-2">
+      <div>
+        <h3 style="font-size:0.9rem;font-weight:700;color:var(--accent);margin-bottom:0.5rem;">Primary: Logistic Regression</h3>
+        <p style="font-size:0.85rem;color:var(--text-muted);line-height:1.7;">
+          Lightweight, fast inference (&lt;5ms), suitable for low-resource devices.
+          Trained separately for each disease with class-balanced weights.
+          Outputs calibrated probabilities for risk stratification.
+        </p>
+      </div>
+      <div>
+        <h3 style="font-size:0.9rem;font-weight:700;color:var(--accent2);margin-bottom:0.5rem;">Fallback: Rule-Based System</h3>
+        <p style="font-size:0.85rem;color:var(--text-muted);line-height:1.7;">
+          Clinical heuristics activate when the ML model is unavailable (offline/cache miss).
+          Example: IF slurred speech + weakness → Stroke High Risk.
+          Zero latency, zero bandwidth.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- DISCLAIMER -->
+  <div class="alert alert-warning animate-fade-up">
+    ⚠️ <strong>Research Disclaimer:</strong> NeuroCare AI is a simulation and research platform
+    for academic/B.Tech projects. It is not a certified medical device. Always consult a qualified
+    doctor for any medical decisions. Emergency: Call <strong>108</strong> (India).
+  </div>
+</div>
+{% endblock %}

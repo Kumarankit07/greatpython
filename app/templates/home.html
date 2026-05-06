@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<!-- HERO -->
+<section class="hero">
+  <div style="max-width:750px;width:100%;">
+    <div class="hero-badge">🌐 Low-Bandwidth · Rural India · Neurological AI</div>
+    <h1>Early Detection Saves Lives<br/>in Rural India</h1>
+    <p>AI-powered triage for Stroke, Epilepsy, Meningitis &amp; Encephalitis.
+       Designed for ASHA workers and patients with connectivity as low as 10&nbsp;kbps.</p>
+    <div class="hero-actions">
+      {% if current_user.is_authenticated %}
+        <a href="{{ url_for('predict.checker') }}" class="btn btn-primary btn-lg">🩺 Start Symptom Check</a>
+        <a href="{{ url_for('simulation.panel') }}" class="btn btn-outline btn-lg">⚙️ Run Simulation</a>
+      {% else %}
+        <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">🚀 Get Started Free</a>
+        <a href="{{ url_for('auth.login') }}" class="btn btn-outline btn-lg">🔑 Login</a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<div class="container">
+  <!-- STATS -->
+  <div class="stats-grid animate-fade-up">
+    <div class="stat-card">
+      <div class="stat-icon">🧠</div>
+      <div class="stat-value" style="color:#93c5fd">4</div>
+      <div class="stat-label">Neurological Diseases Covered</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">📡</div>
+      <div class="stat-value" style="color:#c4b5fd">10kbps</div>
+      <div class="stat-label">Minimum Bandwidth Supported</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">⚡</div>
+      <div class="stat-value" style="color:#6ee7b7">&lt;2s</div>
+      <div class="stat-label">Response Time Target</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">🎯</div>
+      <div class="stat-value" style="color:#fbbf24">75%+</div>
+      <div class="stat-label">Target Detection Accuracy</div>
+    </div>
+  </div>
+
+  <!-- FEATURES -->
+  <div class="mt-3">
+    <h2 class="section-title">Platform Features</h2>
+    <p class="section-sub">A complete simulation and triage platform built for real-world rural constraints.</p>
+    <div class="grid-3">
+      {% for icon, title, desc in [
+        ('🩺','AI Symptom Checker','Logistic Regression model with rule-based fallback. Works offline with cached predictions.'),
+        ('🏥','Care Journey Simulation','Simulate ASHA → PHC → Hospital referral under bandwidth, noise, and missing-data constraints.'),
+        ('📊','Performance Dashboard','Track detection rates, latency, accuracy and bandwidth usage across simulation runs.'),
+        ('👩‍⚕️','Role-Based Access','Separate portals for ASHA workers and patients with tailored workflows.'),
+        ('📴','Offline Mode','Pre-loaded models and cached predictions keep the system running without internet.'),
+        ('📈','Research Analytics','Compare model accuracy vs bandwidth, latency vs model size, detection rate trends.')
+      ] %}
+      <div class="card animate-fade-up">
+        <div style="font-size:2rem;margin-bottom:0.75rem;">{{ icon }}</div>
+        <h3 style="font-size:1rem;font-weight:700;margin-bottom:0.5rem;">{{ title }}</h3>
+        <p style="font-size:0.88rem;color:var(--text-muted);line-height:1.6;">{{ desc }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- DISEASES -->
+  <div class="mt-3 mb-3">
+    <h2 class="section-title">Diseases Covered</h2>
+    <p class="section-sub">Clinically informed models for four major neurological emergencies.</p>
+    <div class="grid-2">
+      {% for color, icon, disease, desc, symptoms in [
+        ('#3b82f6','🔴','Stroke','Rapid brain damage due to blocked or burst blood vessel. Time-critical — every minute counts.',['Slurred speech','Sudden weakness','Vision problems','Severe headache']),
+        ('#8b5cf6','⚡','Epilepsy','Recurrent seizures caused by abnormal electrical activity in the brain.',['Seizure history','Loss of consciousness','Jerking movements','Post-episode confusion']),
+        ('#10b981','🦠','Meningitis','Infection of brain/spinal cord membranes, often bacterial or viral.',['Neck stiffness','High fever','Photophobia','Skin rash']),
+        ('#f59e0b','🌡️','Encephalitis','Brain inflammation, usually viral, causing fever, seizures, and altered consciousness.',['High fever','Altered consciousness','Confusion','Severe headache'])
+      ] %}
+      <div class="card" style="border-left:3px solid {{ color }};">
+        <div class="d-flex align-center gap-1 mb-1">
+          <span style="font-size:1.5rem">{{ icon }}</span>
+          <strong style="font-size:1.05rem">{{ disease }}</strong>
+        </div>
+        <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:0.75rem;">{{ desc }}</p>
+        <div style="display:flex;flex-wrap:wrap;gap:0.4rem;">
+          {% for s in symptoms %}
+            <span style="background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:999px;padding:0.2rem 0.65rem;font-size:0.78rem;color:var(--text-muted);">{{ s }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- CTA -->
+  {% if not current_user.is_authenticated %}
+  <div class="card text-center mb-3" style="background:linear-gradient(135deg,rgba(59,130,246,0.1),rgba(139,92,246,0.1));border-color:rgba(59,130,246,0.3);">
+    <h2 style="font-family:'Outfit',sans-serif;font-size:1.6rem;font-weight:800;margin-bottom:0.75rem;">Ready to Begin?</h2>
+    <p style="color:var(--text-muted);margin-bottom:1.5rem;">Register as a patient or ASHA worker to access the full triage and simulation platform.</p>
+    <div class="d-flex gap-2 justify-between" style="justify-content:center;">
+      <a href="{{ url_for('auth.register') }}?role=asha" class="btn btn-primary">👩‍⚕️ I'm an ASHA Worker</a>
+      <a href="{{ url_for('auth.register') }}?role=patient" class="btn btn-outline">🧑 I'm a Patient</a>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
